@@ -5,11 +5,29 @@ using System.Data.SqlTypes;
 
 namespace Serilog.Sinks.MSSqlServer
 {
+    using System.ComponentModel;
+
+    using Serilog.Sinks.MSSqlServer.Sinks.General;
+
     /// <summary>
     /// Helpers for validating and converting SQL data types and the corresponding .NET types used by the DataColumn class.
     /// </summary>
-    public static class SqlDataTypes
+    public sealed class SqlDataTypes : IDataTypeMapper<SqlDbType>
     {
+        private static readonly SqlDataTypes instance = new SqlDataTypes();
+
+        static SqlDataTypes()
+        {
+        }
+
+        private SqlDataTypes()
+        {
+        }
+
+        /// <summary>
+        /// Singleton pattern c# in depth jon skeet
+        /// </summary>
+        public static SqlDataTypes Instance => instance;
         /// <summary>
         /// SqlDbType doesn't have anything like "None" so we indicate an unsupported type by
         /// referencing a type we can guarantee the rest of the sink will never recognize.
@@ -64,20 +82,6 @@ namespace Serilog.Sinks.MSSqlServer
         };
 
         /// <summary>
-        /// Like Enum.TryParse for SqlDbType but it also validates against the SqlTypeToSystemType list, returning
-        /// false if the requested SQL type is not supported by this sink.
-        /// </summary>
-        public static bool TryParseIfSupported(string requestedType, out SqlDbType supportedSqlDbType)
-        {
-            supportedSqlDbType = NotSupported;
-            if(Enum.TryParse(requestedType, ignoreCase: true, result: out supportedSqlDbType))
-            {
-                return SystemTypeMap.ContainsKey(supportedSqlDbType);
-            }
-            return false;
-        }
-
-        /// <summary>
         /// A collection keyed on the DataColumn .NET types with values representing the default SqlDbType enum.
         /// This exists for backwards-compatibility reasons since all configuration based on DataColumn has been
         /// marked Obsolete and will be removed in a future release.
@@ -129,6 +133,76 @@ namespace Serilog.Sinks.MSSqlServer
             SqlDbType.UniqueIdentifier
         };
 
-        
+        /// <summary>
+        /// 
+        /// </summary>
+        public SqlDbType NotSupportedDataType => NotSupported;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dataType"></param>
+        /// <returns></returns>
+        public bool IsDataLengthRequired(SqlDbType dataType)
+        {
+            return DataLengthRequired.Contains(dataType);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dataType"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public bool IsColumnStoreCompatible(SqlDbType dataType)
+        {
+            return ColumnstoreCompatible.Contains(dataType);
+        }
+
+        /// <summary>
+        /// Like Enum.TryParse for SqlDbType but it also validates against the SqlTypeToSystemType list, returning
+        /// false if the requested SQL type is not supported by this sink.
+        /// </summary>
+        public bool TryParseIfSupported(string requestedType, out SqlDbType supportedSqlDbType)
+        {
+            supportedSqlDbType = NotSupported;
+            if(Enum.TryParse(requestedType, ignoreCase: true, result: out supportedSqlDbType))
+            {
+                return SystemTypeMap.ContainsKey(supportedSqlDbType);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="mappedType"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public bool TryReverseMap(Type type, out SqlDbType mappedType)
+        {
+            mappedType = NotSupportedDataType;
+            if (!ReverseTypeMap.ContainsKey(type)) return false;
+            mappedType = ReverseTypeMap[type];
+            return true;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dataType"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public bool TryMap(SqlDbType dataType, out Type type)
+        {
+            type = null;
+            if (!SystemTypeMap.ContainsKey(dataType)) return false;
+            type = SystemTypeMap[dataType];
+            return true;
+        }
+
     }
 }

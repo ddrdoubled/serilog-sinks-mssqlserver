@@ -23,6 +23,8 @@ using System.Text;
 
 namespace Serilog.Sinks.MSSqlServer
 {
+    using Serilog.Sinks.MSSqlServer.Sinks.General;
+
     /// <summary>
     ///  Writes log events as rows in a table of MSSqlServer database using Audit logic, meaning that each row is synchronously committed
     ///  and any errors that occur are propagated to the caller.
@@ -67,14 +69,14 @@ namespace Serilog.Sinks.MSSqlServer
         {
             try
             {
-                using (SqlConnection connection = new SqlConnection(_traits.connectionString))
+                using (SqlConnection connection = new SqlConnection(_traits.ConnectionString))
                 {
                     connection.Open();
                     using (SqlCommand command = connection.CreateCommand())
                     {
                         command.CommandType = CommandType.Text;
 
-                        StringBuilder fieldList = new StringBuilder($"INSERT INTO [{_traits.schemaName}].[{_traits.tableName}] (");
+                        StringBuilder fieldList = new StringBuilder($"INSERT INTO [{_traits.SchemaName}].[{_traits.TableName}] (");
                         StringBuilder parameterList = new StringBuilder(") VALUES (");
 
                         int index = 0;

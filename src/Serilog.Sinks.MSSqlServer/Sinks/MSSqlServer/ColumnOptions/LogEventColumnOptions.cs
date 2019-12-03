@@ -3,12 +3,14 @@ using System.Data;
 
 namespace Serilog.Sinks.MSSqlServer
 {
+    using Serilog.Sinks.MSSqlServer.Sinks.General.ColumnsOptions;
+
     public partial class ColumnOptions // Standard Column options are inner classes for backwards-compatibility.
     {
         /// <summary>
         /// Options for the LogEvent column.
         /// </summary>
-        public class LogEventColumnOptions : SqlColumn
+        public class LogEventColumnOptions : SqlColumn, ILogEventColumnOptions
         {
             /// <summary>
             /// Constructor.

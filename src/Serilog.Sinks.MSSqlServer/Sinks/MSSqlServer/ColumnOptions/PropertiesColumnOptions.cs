@@ -3,12 +3,14 @@ using System.Data;
 
 namespace Serilog.Sinks.MSSqlServer
 {
+    using Serilog.Sinks.MSSqlServer.Sinks.General.ColumnsOptions;
+
     public partial class ColumnOptions // Standard Column options are inner classes for backwards-compatibility.
     {
         /// <summary>
         /// Options for the Properties column.
         /// </summary>
-        public class PropertiesColumnOptions : SqlColumn
+        public class PropertiesColumnOptions : SqlColumn, IPropertiesColumnOptions
         {
             /// <summary>
             /// Constructor.

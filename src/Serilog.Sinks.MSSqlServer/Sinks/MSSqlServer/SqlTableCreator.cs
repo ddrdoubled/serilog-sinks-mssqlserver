@@ -5,6 +5,8 @@ using System.Text;
 
 namespace Serilog.Sinks.MSSqlServer
 {
+    using Serilog.Sinks.MSSqlServer.Sinks.General.ColumnsOptions;
+
     internal class SqlTableCreator
     {
         private readonly string connectionString;
@@ -20,6 +22,25 @@ namespace Serilog.Sinks.MSSqlServer
             this.tableName = tableName;
             this.dataTable = dataTable;
             this.columnOptions = columnOptions;
+        }
+
+        public static Action<string, string, string, DataTable, ColumnOptions> Creation
+        {
+            get
+            {
+                Action<string, string, string, DataTable, ColumnOptions> action =
+                    (connectionString, schemaName, tableName, dataTable, columnOptions) =>
+                        {
+                            var creator = new SqlTableCreator(
+                                connectionString,
+                                schemaName,
+                                tableName,
+                                dataTable,
+                                columnOptions);
+                            creator.CreateTable();
+                        };
+                return action;
+            }
         }
 
         public int CreateTable()
